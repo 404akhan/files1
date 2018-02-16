@@ -93,7 +93,7 @@ void print_process(long tgid, int uid) {
 
         sscanf(p, "%d %d %d %d", &uid1, &uid2, &uid3, &uid4);
         if(uid1 == uid) 
-        	printf("%s: %ld\n", name, tgid);
+        	printf("%ld: %s\n", tgid, name);
         break;
     }
 
