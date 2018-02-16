@@ -39,11 +39,12 @@ void f3() {
 	char *e;
 
 	while(fgets(line, sizeof(line), file)) {
-		if(strstr(line, "MemTotal") != NULL) {
+		if(strncmp(line, "MemTotal:", 9) == 0) {
 			e = strchr(line, ':');
 			e++;
 			while(isspace((unsigned char)*e)) e++;
 			printf("Installed Memory: %s", e);
+			break;
 		}
 	}
 	fclose(file);
@@ -63,9 +64,9 @@ void f4() {
 	printf("%02dD:%02dH:%02dM:%02dS\n", dd, hh, mm, ss);
 }
 
-void print_status(long tgid, int uid) {
+void print_process(long tgid, int uid) {
 	/**
-		function "print_status" and beginning of "main" based on:
+		function "print_process" and beginning of "main" based on:
 		https://stackoverflow.com/questions/29991182/programmatically-read-all-the-processes-status-from-proc
 	*/
     char path[40], line[100], *p;
@@ -137,7 +138,7 @@ int main(int argc, char* argv[])
 
 		    tgid = strtol(ent->d_name, NULL, 10);
 
-		    print_status(tgid, uid);
+		    print_process(tgid, uid);
 		}
 
 		printf("\n");
