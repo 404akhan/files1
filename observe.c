@@ -2,6 +2,9 @@
 #include <pwd.h>
 #include <dirent.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 
 void f1() {
 	FILE* file = fopen("/proc/cpuinfo", "r");
@@ -36,11 +39,12 @@ void f3() {
 	char *e;
 
 	while(fgets(line, sizeof(line), file)) {
-		if(strstr(line, "MemTotal") != NULL) {
+		if(strncmp(line, "MemTotal:", 9) == 0) {
 			e = strchr(line, ':');
 			e++;
 			while(isspace((unsigned char)*e)) e++;
 			printf("Installed Memory: %s", e);
+			break;
 		}
 	}
 	fclose(file);
@@ -52,8 +56,6 @@ void f4() {
 	fscanf(file, "%lf %lf", &n_sec, &dummy);
 	fclose(file);
 
-	// printf("%lf %lf\n\n", n_sec, dummy);
-
 	int dd = n_sec / 60 / 60 / 24;
 	int hh = (n_sec - dd*24*60*60) / 60 / 60;
 	int mm = (n_sec - dd*24*60*60 - hh*60*60) / 60;
@@ -62,9 +64,9 @@ void f4() {
 	printf("%02dD:%02dH:%02dM:%02dS\n", dd, hh, mm, ss);
 }
 
-void print_status(long tgid, int uid) {
+void print_process(long tgid, int uid) {
 	/**
-		function "print_status" and beginning of main based on:
+		function "print_process" and beginning of "main" based on:
 		https://stackoverflow.com/questions/29991182/programmatically-read-all-the-processes-status-from-proc
 	*/
     char path[40], line[100], *p;
@@ -90,11 +92,8 @@ void print_status(long tgid, int uid) {
         int uid1, uid2, uid3, uid4;
 
         sscanf(p, "%d %d %d %d", &uid1, &uid2, &uid3, &uid4);
-        // Ignore "State:" and whitespace
-        // 	return name_of_process;
-
         if(uid1 == uid) 
-        	printf("%s: %d\n", name, tgid);
+        	printf("%s: %ld\n", name, tgid);
         break;
     }
 
@@ -117,7 +116,7 @@ int main(int argc, char* argv[])
 	struct passwd *p;
 	int uid;
 
-	if (user == NULL) {
+	if (argc == 1) {
 		printf("-------------------------Processer Type-------------------------\n");
 		f1();
 		printf("-------------------------Kernel Version-------------------------\n");
@@ -128,7 +127,7 @@ int main(int argc, char* argv[])
 		f4();
 	}
 	else if ((p = getpwnam(user)) == NULL) {
-		printf("Invalid username: %s\n", user);
+		printf("Invalid username: %s\n\n", user);
 	}
 	else {
 		uid = (int) p->pw_uid;
@@ -139,14 +138,10 @@ int main(int argc, char* argv[])
 
 		    tgid = strtol(ent->d_name, NULL, 10);
 
-		    print_status(tgid, uid);
+		    print_process(tgid, uid);
 		}
 
+		printf("\n");
 		closedir(proc);
-
 	}
-
-
-
-
 }
